@@ -1,0 +1,8 @@
+image:
+  # repo: docker.io/vikas
+  # name: jirainventory
+  repo: docker.io
+  name: hello-world
+  email: sre-team@uipath.com
+  user: 
+  pass: 

@@ -1,0 +1,64 @@
+name: Test-dummy.deploy
+
+resources:
+  repositories:
+  - repository: helm
+    endpoint: UiPath
+    type: github
+    name: UiPath/AzurePipelinesTemplates
+    ref: refs/tags/uipath.helm.1.7.2
+
+trigger: none
+
+pr:
+  autoCancel: 'true'
+  branches:
+    include:
+    - master
+    - k8s-cron-tasks
+
+variables:
+  # jobName: null
+  # displayName: null
+  # #dependsOn: []
+  #condition: succeeded()
+  #environmentName: null
+  #keyVaultName: 'alertgateway-alpha-kv'
+  azureConnectionName: 'AzureDevTestEA'
+  aksCluster: 'sre-alpha-apps-we-b-aks'
+  #helmValuesFile: null
+  helmPackage: 'test-dummy'
+  #helmValues : null
+  helmPurgeOnFailure: false
+  helmUpgradeTimeout: 600s
+  helmVersion: 3.3.1
+  #artifactName: null
+  artifactFolder: $(System.DefaultWorkingDirectory)/test-dummy
+  #azureResourceGroup: 'sre-alpha-apps-we-rg'
+  #azureContainerRegistryUrl: alertgatewayDockerRegistryAlpha.azurecr.io
+
+steps:
+  # - task: AzureKeyVault@2
+  #   displayName: 'Read secrets from KV'
+  #   inputs:
+  #     ConnectedServiceName: ${{ variables.azureConnectionName }}
+  #     keyVaultName: ${{ variables.keyVaultName }}
+  #     secretsFilter: 'jira-api-token, slack-access-token, slackhandler-api-token'
+
+  - template: Azure/deploy.helm.steps.yml@helm
+    parameters:
+      azureConnectionName: ${{ variables.azureConnectionName }}
+      azureResourceGroup: ${{ variables.azureResourceGroup }}
+      azureKubernetesCluster: ${{ variables.aksCluster }}
+      helmReleaseName: ${{ variables.helmPackage }}
+      #helmInlineValues: 'JIRA_API_TOKEN=$(jira-api-token),SLACK_AK=$(slack-access-token),SLACK_SK=$(slackhandler-api-token),AGW_API_KEY=47e943c05566daa2787b'
+      helmPurgeOnFailure: ${{ variables.helmPurgeOnFailure }}
+      helmUpgradeTimeout:  ${{ variables.helmUpgradeTimeout }}
+      #valueFilePath: ${{ variables.artifactFolder }}/.infrastructure/helm/${{ variables.helmPackage }}/values_${{ variables.environmentName }}.yaml
+      helmChartRootPath: ${{ variables.artifactFolder }}/helm
+      helmVersion: ${{ variables.helmVersion }}
+      #azureContainerRegistryUrl: ${{ variables.azureContainerRegistryUrl }}
+      aksRbacEnabled: true
+      aksMsiEnabled: true
+
+
